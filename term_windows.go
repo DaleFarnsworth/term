@@ -13,3 +13,8 @@ var errNotSupported = errors.New("not supported")
 func Open(name string, options ...func(*Term) error) (*Term, error) {
 	return nil, errNotSupported
 }
+
+// OpenFD opens an asynchronous communications port.
+func OpenFD(name string, options ...func(*Term) error) (*Term, error) {
+	return nil, errNotSupported
+}

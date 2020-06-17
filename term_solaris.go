@@ -4,11 +4,13 @@ package term
 import "C"
 
 import (
-	"syscall"
-	"github.com/pkg/term/termios"
+	"fmt"
 	"os"
-	"golang.org/x/sys/unix"
+	"syscall"
 	"unsafe"
+
+	"github.com/pkg/term/termios"
+	"golang.org/x/sys/unix"
 )
 
 type attr syscall.Termios
@@ -73,6 +75,27 @@ func (a *attr) setSpeed(baud int) error {
 	return nil
 }
 
+func setOptions(t Term, options ...func(*Term) error) error {
+	modules := [2]string{"ptem", "ldterm"}
+	for _, mod := range modules {
+		err := unix.IoctlSetInt(t.fd, C.I_PUSH, int(uintptr(unsafe.Pointer(syscall.StringBytePtr(mod)))))
+		if err != nil {
+			return err
+		}
+	}
+
+	termios.Tcgetattr(uintptr(t.fd), &t.orig)
+	if err := termios.Tcgetattr(uintptr(t.fd), &t.orig); err != nil {
+		return err
+	}
+
+	if err := t.SetOption(options...); err != nil {
+		return err
+	}
+
+	return syscall.SetNonblock(t.fd, false)
+}
+
 // Open opens an asynchronous communications port.
 func Open(name string, options ...func(*Term) error) (*Term, error) {
 	fd, e := syscall.Open(name, syscall.O_NOCTTY|syscall.O_CLOEXEC|syscall.O_NDELAY|syscall.O_RDWR, 0666)
@@ -80,25 +103,16 @@ func Open(name string, options ...func(*Term) error) (*Term, error) {
 		return nil, &os.PathError{"open", name, e}
 	}
 
-	modules := [2]string{"ptem", "ldterm"}
-	for _, mod := range modules {
-		err := unix.IoctlSetInt(fd, C.I_PUSH, int(uintptr(unsafe.Pointer(syscall.StringBytePtr(mod)))))
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	t := Term{name: name, fd: fd}
-	termios.Tcgetattr(uintptr(t.fd), &t.orig)
-	if err := termios.Tcgetattr(uintptr(t.fd), &t.orig); err != nil {
-		return nil, err
-	}
 
-	if err := t.SetOption(options...); err != nil {
-		return nil, err
-	}
+	return &t, setOptions(t, options...)
+}
 
-	return &t, syscall.SetNonblock(t.fd, false)
+// OpenFD opens an asynchronous communications port.
+func Open(fd int, options ...func(*Term) error) (*Term, error) {
+	t := Term{name: fmt.Sprintf("fd%d"), fd: fd}
+
+	return &t, setOptions(t, options...)
 }
 
 // Restore restores the state of the terminal captured at the point that
