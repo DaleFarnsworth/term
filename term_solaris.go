@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/pkg/term/termios"
+	"github.com/dalefarnsworth/term/termios"
 	"golang.org/x/sys/unix"
 )
 

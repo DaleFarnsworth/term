@@ -7,7 +7,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/pkg/term/termios"
+	"github.com/dalefarnsworth/term/termios"
 )
 
 func setOptions(t Term, options ...func(*Term) error) error {

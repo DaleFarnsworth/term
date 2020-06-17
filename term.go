@@ -11,7 +11,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/pkg/term/termios"
+	"github.com/dalefarnsworth/term/termios"
 )
 
 const (

@@ -5,8 +5,9 @@ package term
 import (
 	"testing"
 
-	"github.com/pkg/term/termios"
 	"time"
+
+	"github.com/dalefarnsworth/term/termios"
 )
 
 // assert that Term implements the same method set across
