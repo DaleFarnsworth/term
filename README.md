@@ -1,6 +1,6 @@
 
 # term
-    import "github.com/pkg/term"
+    import "github.com/dalefarnsworth/term"
 
 Package term manages POSIX terminals. As POSIX terminals are connected to,
 or emulate, a UART, this package also provides control over the various
